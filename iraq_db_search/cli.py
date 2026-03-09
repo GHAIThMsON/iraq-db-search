@@ -4,7 +4,18 @@ import os
 import sys
 from .database import Database
 
-DEFAULT_DB = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), 'database.db')
+def get_db_path():
+    # Check current directory first, then package directory
+    if os.path.exists('database.db'):
+        return os.path.abspath('database.db')
+    pkg_dir = os.path.dirname(os.path.dirname(__file__))
+    db_path = os.path.join(pkg_dir, 'database.db')
+    if os.path.exists(db_path):
+        return db_path
+    # Fallback to current directory
+    return os.path.abspath('database.db')
+
+DEFAULT_DB = get_db_path()
 
 def safe_echo(msg):
     msg = str(msg)

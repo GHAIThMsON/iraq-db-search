@@ -6,7 +6,12 @@ import os
 app = Flask(__name__)
 CORS(app)
 
-DB_PATH = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), 'database.db')
+def get_db_path():
+    if os.path.exists('database.db'):
+        return os.path.abspath('database.db')
+    return os.path.join(os.path.dirname(os.path.dirname(__file__)), 'database.db')
+
+DB_PATH = get_db_path()
 
 def get_db_connection():
     conn = sqlite3.connect(DB_PATH)
