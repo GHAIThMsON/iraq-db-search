@@ -5,14 +5,12 @@ import sys
 from .database import Database
 
 def get_db_path():
-    # Check current directory first, then package directory
     if os.path.exists('database.db'):
         return os.path.abspath('database.db')
     pkg_dir = os.path.dirname(os.path.dirname(__file__))
     db_path = os.path.join(pkg_dir, 'database.db')
     if os.path.exists(db_path):
         return db_path
-    # Fallback to current directory
     return os.path.abspath('database.db')
 
 DEFAULT_DB = get_db_path()
@@ -32,86 +30,71 @@ def cli(ctx, db):
     ctx.obj['db'] = Database(db)
 
 @cli.command()
-@click.option('--db', default=DEFAULT_DB, help='Path to database file')
-def tables(db):
-    """List all tables in database"""
-    db_obj = Database(db)
-    tables = db_obj.get_tables()
-    for t in tables:
-        info = db_obj.get_table_info(t)
-        safe_echo(f"{t}: {info['count']:,} rows")
-
-@cli.command()
-@click.argument('query')
-@click.option('--table', '-t', help='Search in specific table')
+@click.argument('value')
 @click.option('--limit', '-l', default=50, help='Max results')
-@click.option('--json', '-j', 'output_json', is_flag=True, help='Output as JSON')
 @click.option('--db', default=DEFAULT_DB, help='Path to database file')
-def search(query, table, limit, output_json, db):
-    """Search for a name, phone, or any value"""
+def search(value, limit, db):
+    """Search for any value (name, phone, or any text)"""
     db_obj = Database(db)
-    results = db_obj.search(query, table, limit)
+    results = db_obj.search(value, None, limit)
     
-    if output_json:
-        safe_echo(json.dumps(results, ensure_ascii=False, indent=2))
-    else:
-        if not results:
-            safe_echo("No results found.")
-            return
-        
-        safe_echo(f"Found {len(results)} results:\n")
-        
-        # Group by table
-        by_table = {}
-        for r in results:
-            tbl = r['table']
-            if tbl not in by_table:
-                by_table[tbl] = []
-            by_table[tbl].append(r['data'])
-        
-        for tbl, rows in by_table.items():
-            safe_echo(f"=== {tbl} ({len(rows)} results) ===")
-            for row in rows:
-                for key, val in row.items():
-                    if key not in ('id', 'source_file') and val:
-                        safe_echo(f"  {key}: {val}")
-                safe_echo("")
-            safe_echo("")
+    # Format output without table info
+    output = []
+    for r in results:
+        data = {k: v for k, v in r['data'].items() if k not in ('id', 'source_file') and v}
+        if data:
+            output.append(data)
+    
+    safe_echo(json.dumps(output, ensure_ascii=False, indent=2))
 
 @cli.command()
-@click.argument('table')
-@click.option('--limit', '-l', default=10, help='Number of rows')
+@click.argument('name')
+@click.option('--limit', '-l', default=50, help='Max results')
 @click.option('--db', default=DEFAULT_DB, help='Path to database file')
-def show(table, limit, db):
-    """Show sample data from a table"""
+def name(name, limit, db):
+    """Search by name"""
     db_obj = Database(db)
-    info = db_obj.get_table_info(table)
+    results = db_obj.search(name, None, limit)
     
-    safe_echo(f"Table: {table}")
-    safe_echo(f"Rows: {info['count']:,}")
-    safe_echo(f"Columns: {', '.join([c['name'] for c in info['columns']])}")
-    safe_echo("")
-    
-    results = db_obj.search('', table, limit)
+    output = []
     for r in results:
-        safe_echo("---")
-        for key, val in r['data'].items():
-            if key not in ('id',) and val:
-                safe_echo(f"  {key}: {val}")
+        data = {k: v for k, v in r['data'].items() if k not in ('id', 'source_file') and v}
+        if data:
+            output.append(data)
+    
+    safe_echo(json.dumps(output, ensure_ascii=False, indent=2))
+
+@cli.command()
+@click.argument('phone')
+@click.option('--limit', '-l', default=50, help='Max results')
+@click.option('--db', default=DEFAULT_DB, help='Path to database file')
+def phone(phone, limit, db):
+    """Search by phone number"""
+    db_obj = Database(db)
+    results = db_obj.search(phone, None, limit)
+    
+    output = []
+    for r in results:
+        data = {k: v for k, v in r['data'].items() if k not in ('id', 'source_file') and v}
+        if data:
+            output.append(data)
+    
+    safe_echo(json.dumps(output, ensure_ascii=False, indent=2))
 
 @cli.command()
 @click.option('--db', default=DEFAULT_DB, help='Path to database file')
 def stats(db):
     """Show database statistics"""
     db_obj = Database(db)
-    stats = db_obj.get_all_stats()
+    stats_data = db_obj.get_all_stats()
     
-    total = sum(stats.values())
-    safe_echo(f"Total tables: {len(stats)}")
-    safe_echo(f"Total records: {total:,}\n")
+    total = sum(stats_data.values())
+    output = {
+        "total_records": total,
+        "total_tables": len(stats_data)
+    }
     
-    for tbl, count in sorted(stats.items(), key=lambda x: -x[1]):
-        safe_echo(f"  {tbl}: {count:,}")
+    safe_echo(json.dumps(output, ensure_ascii=False, indent=2))
 
 if __name__ == '__main__':
     cli()
