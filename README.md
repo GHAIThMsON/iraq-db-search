@@ -19,7 +19,20 @@ cd iraq-db-search
 pip install -e .
 ```
 
-## Usage
+## Windows Usage
+
+On Windows, you need to set UTF-8 encoding. Run:
+
+```bash
+# Option 1: Using cmd
+chcp 65001
+set PYTHONIOENCODING=utf-8
+iraq-search search "احمد"
+
+# Option 2: Using PowerShell
+$env:PYTHONIOENCODING = "utf-8"
+iraq-search search "احمد"
+```
 
 ### Search for any value (name, phone, or text)
 ```bash
@@ -47,6 +60,15 @@ iraq-search stats
 ### Limit results
 ```bash
 iraq-search search "احمد" --limit 20
+```
+
+## Linux/Mac Usage
+
+```bash
+iraq-search search "احمد"
+iraq-search name "احمد"
+iraq-search phone "0770"
+iraq-search stats
 ```
 
 ## Database Statistics

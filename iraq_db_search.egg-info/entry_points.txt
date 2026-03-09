@@ -1,0 +1,3 @@
+[console_scripts]
+iraq-search = iraq_db_search.cli:cli
+
