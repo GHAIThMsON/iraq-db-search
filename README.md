@@ -4,14 +4,14 @@ CLI tool for searching Iraq database records by name, phone number, or any value
 
 ## Features
 
-- Search across all tables or filter by specific table
+- Search by any value (name, phone, or any text)
+- Search by name specifically
+- Search by phone number
 - Fast SQLite-based search
-- Export results as JSON
+- JSON output
 - Works on Linux and Windows
 
 ## Installation
-
-### From Source
 
 ```bash
 git clone https://github.com/GHAIThMsON/iraq-db-search.git
@@ -19,86 +19,56 @@ cd iraq-db-search
 pip install -e .
 ```
 
-### Using the Database
-
-The repository includes a pre-built database with ~330K records. The database file is included in the repo.
-
 ## Usage
 
-### Search for a name or phone number
-
+### Search for any value (name, phone, or text)
 ```bash
 iraq-search search "احمد"
 iraq-search search "0770"
 iraq-search search "البصرة"
 ```
 
-### Search in specific table
-
+### Search by name
 ```bash
-iraq-search search "احمد" --table table_3
+iraq-search name "احمد"
 ```
 
-### Limit results
-
+### Search by phone number
 ```bash
-iraq-search search "احمد" --limit 20
+iraq-search phone "0770"
+iraq-search phone "078"
 ```
 
-### Output as JSON
-
-```bash
-iraq-search search "احمد" --json
-```
-
-### List all tables
-
-```bash
-iraq-search tables
-```
-
-### Show database statistics
-
+### Get database statistics
 ```bash
 iraq-search stats
 ```
 
-### Show sample data from a table
-
+### Limit results
 ```bash
-iraq-search show table_3 --limit 5
+iraq-search search "احمد" --limit 20
 ```
 
-## API Server
+## Database Statistics
 
-You can also run a web interface:
+- Total Records: ~322,000
+- Total Tables: 10
 
-```bash
-# Install dependencies
-pip install flask flask-cors
+## Example Output
 
-# Run server
-python -m iraq_db_search.server
-
-# Open http://localhost:5000
+```json
+[
+  {
+    "الاسم_الكامل": "احمد محمد علي",
+    "المحافظة": " Baghdad",
+    "الرقم_القياسي": "123456"
+  },
+  {
+    "اسم_الخريج": "احمد عبد الله",
+    "سنة_التخرج": "2020"
+  }
+]
 ```
-
-## Database Structure
-
-The database contains 10 tables with ~330K records:
-
-| Table | Records | Description |
-|-------|---------|-------------|
-| table_0 | 274,765 | Defense database |
-| table_1 | 2,004 | Year 2000 data |
-| table_2 | 63 | Basra data |
-| table_3 | 625 | Lawyers 2023 |
-| table_4 | 1,765 | Martyrs & Prisoners |
-| table_5 | 1,146 | Student names |
-| table_6 | 23,573 | Traffic employees |
-| table_7 | 11 | Ministry locations |
-| table_8 | 17,907 | Civilian transfers |
-| table_9 | 19 | NGOs |
 
 ## License
 
